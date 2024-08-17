@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>{{fullname}} Performance Report</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        .header {
+            width: 100%;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+
+        .header-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .header-table td {
+            vertical-align: middle;
+        }
+
+        .text-section {
+            padding-right: 20px;
+        }
+
+        .text-section h1 {
+            margin: 0;
+            font-size: 24px;
+            color: #333;
+        }
+
+        .text-section p {
+            margin: 5px 0;
+            font-size: 14px;
+            color: #555;
+        }
+
+        .image-section {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 2px solid #ddd;
+            text-align: center;
+        }
+
+        .image-section img {
+            width: 100px;
+            height: 100px;
+            object-fit: cover; /* Ensures the image covers the entire area without distortion */
+            display: block;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f4f4f4;
+        }
+
+        .chart-container {
+            page-break-inside: avoid;
+            margin-bottom: 60px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <table class="header-table">
+            <tr>
+                <td class="text-section">
+                    <h1>Performance Report</h1>
+                    <p>Name: {{name}}</p>
+                    <p>Enrollment: {{userId}}</p>
+                    <p>Email: {{email}}</p>
+                    <p>Mobile: {{mobile}}</p>
+                </td>
+                <td class="image-section">
+                    <img src="{{path}}" alt="Profile Image">
+                </td>
+            </tr>
+        </table>
+    </div>
+    
+    {{midSem1Table}}
+    
+    {{midSem2Table}}
+    
+    {{externalTable}}
+    
+</body>
+</html>
