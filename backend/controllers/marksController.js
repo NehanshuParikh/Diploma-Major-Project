@@ -24,7 +24,7 @@ const upload = multer({
 
 export const setExamTypeSubjectBranchDivision = async (req, res) => {
     const { examType, subject, branch, division, level, school, semester } = req.body;
-    const facultyId = req.user.userId; // Getting faculty ID from the logged-in user
+    const userId = req.user.userId; // Getting faculty ID from the logged-in user
 
     if (!examType || !subject || !branch || !division || !level || !school || !semester) {
         return res.status(400).json({ message: 'All fields are required' });
@@ -33,7 +33,7 @@ export const setExamTypeSubjectBranchDivision = async (req, res) => {
     try {
         // Check if the faculty has requested permission
         const permissionRequest = await PermissionRequest.findOne({
-            facultyId,
+            userId,
             examType,
             subject,
             semester,
@@ -110,9 +110,39 @@ export const uploadMarksSheet = async (req, res) => {
             return res.status(400).json({ message: 'No file uploaded' });
         }
 
+        const { examType, subject, branch, level, school, division, semester } = req.body
+
+        // checking the if the faculty has filled all the details for request checking procedure
+        if (!examType || !subject || !branch || !level || !school || !division || !semester) {
+            return res.status(400).json({ message: 'All required parameters are not provided' });
+        }
+
+        const userId = req.user.userId; // Getting faculty ID from the logged-in user
+
+         // Check if the faculty has requested permission
+         const permissionRequest = await PermissionRequest.findOne({
+            userId,
+            examType,
+            subject,
+            semester,
+            status: { $in: ['Pending', 'Approved'] }
+        });
+
+        if (!permissionRequest) {
+            return res.status(400).json({ message: 'You have not requested permission for this exam type or subject' });
+        }
+
+        if (permissionRequest.status === 'pending') {
+            return res.status(403).json({ message: 'Your permission request is still pending' });
+        }
+
+        if (!permissionRequest) {
+            return res.status(403).json({ message: 'You do not have approved permission for this exam type or subject' });
+        }
+
         // Read the Excel file
         const workbook = xlsx.readFile(file.path);
-        
+
         // Loop through all sheets in the workbook
         for (const sheetName of workbook.SheetNames) {
             const sheet = workbook.Sheets[sheetName];
