@@ -7,15 +7,43 @@ import path from "path";
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import fs from "fs";
+import owasp from 'owasp-password-strength-test'
 // Create __filename and __dirname
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 export const signup = async (req, res) => {
-    const { userId, email, password, userType, fullname, mobile } = req.body
+    const { userId, email, password, userType, fullname, mobile, department, school } = req.body
     try {
-        if (!userId, !password, !userType, !email, !fullname, !mobile) {
+        if (!userId, !password, !userType, !email, !fullname, !mobile, !department, !school) {
             throw new Error("All Fields Are Required");
+        }
+
+        // Password validation
+        const passwordValidationRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/;
+
+        if (password === userId) {
+            return res.status(400).json({ success: false, message: "Password cannot be the same as UserID" });
+        }
+
+        if (!passwordValidationRegex.test(password)) {
+            return res.status(400).json({
+                success: false,
+                message: "Password must contain at least 8 characters, including one uppercase letter, one lowercase letter, one digit, and one special character"
+            });
+        }
+
+        owasp.config({
+            minLength: 8,
+            minOptionalTestsToPass: 4
+        })
+
+        const result = owasp.test(password)
+        if (!result.strong) {
+            return res.status(400).json({
+                success: false,
+                message: "Password is too weak. " + result.errors.join(' ')
+            });
         }
 
         const userAlreadyExists = await User.findOne({ userId })
@@ -40,7 +68,9 @@ export const signup = async (req, res) => {
             fullname,
             mobile,
             verificationToken,
-            verificationTokenExpiresAt: Date.now() + 10 * 60 * 1000 // token / otp expires in 10 minutes
+            verificationTokenExpiresAt: Date.now() + 10 * 60 * 1000, // token / otp expires in 10 minutes
+            department,
+            school
         })
 
 

@@ -43,7 +43,15 @@ const userSchema = new mongoose.Schema({
     // the token or otp which we will send through email for verifing the user will be stored here
     verificationToken: String,
     // the token or otp which we will send through email for verifing the user will be expired in this much time
-    verificationTokenExpiresAt: Date
+    verificationTokenExpiresAt: Date,
+    department: {
+        type: String,
+        enum: ['IT', 'Mechanical'], // Add more departments as needed
+    },
+    school: {
+        type: String,
+        enum: ['KSDS', 'KSET', 'KSBM'], // Add more schools as needed
+    }
 
 },{ timestamps: true })
 

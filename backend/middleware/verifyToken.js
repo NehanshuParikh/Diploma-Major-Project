@@ -1,6 +1,7 @@
+import { User } from '../models/userModel.js';
 import jwt from 'jsonwebtoken';
 
-export const verifyToken = (req, res, next) => {
+export const verifyToken = async (req, res, next) => {
     // Try to get the token from cookies
     let token = req.cookies.token;
 
@@ -18,8 +19,15 @@ export const verifyToken = (req, res, next) => {
     }
 
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = decoded.userId;
+        const decoded = jwt.verify(token, process.env.JWT_SECRET); // Verify the token
+        console.log("Decoded ", decoded.userId)
+        const user = await User.findById(decoded.userId); // Use findById instead of findOne
+        console.log("User Id ", user.userId)
+        if (!user) {
+            return res.status(401).json({ message: 'User not found' });
+        }
+
+        req.user = user; // Populate req.user with the authenticated user
         next();
     } catch (error) {
         return res.status(401).json({ success: false, message: "Invalid Token." });

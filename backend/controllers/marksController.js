@@ -5,6 +5,7 @@ import xlsx from 'xlsx';
 import fs from 'fs'; // Import fs module
 import path from 'path'; // Import path module
 import { Marks } from '../models/marksModel.js';
+import { PermissionRequest } from '../models/permissionRequestModel.js';
 
 // Determine the directory name using import.meta.url
 const __filename = fileURLToPath(import.meta.url);
@@ -23,17 +24,44 @@ const upload = multer({
 
 export const setExamTypeSubjectBranchDivision = async (req, res) => {
     const { examType, subject, branch, division, level, school, semester } = req.body;
+    const facultyId = req.user.userId; // Getting faculty ID from the logged-in user
 
-    // Set cookies with the selected exam type and subject
-    res.cookie('examType', examType, { httpOnly: true });
-    res.cookie('subject', subject, { httpOnly: true });
-    res.cookie('branch', branch, { httpOnly: true });
-    res.cookie('division', division, { httpOnly: true });
-    res.cookie('level', level, { httpOnly: true });
-    res.cookie('school', school, { httpOnly: true });
-    res.cookie('semester', semester, { httpOnly: true });
+    if (!examType || !subject || !branch || !division || !level || !school || !semester) {
+        return res.status(400).json({ message: 'All fields are required' });
+    }
 
-    res.status(200).json({ message: 'Exam type and subject selected' });
+    try {
+        // Check if the faculty has requested permission
+        const permissionRequest = await PermissionRequest.findOne({
+            facultyId,
+            examType,
+            subject,
+            semester,
+            status: { $in: ['pending', 'approved'] }
+        });
+
+        if (!permissionRequest) {
+            return res.status(400).json({ message: 'You have not requested permission for this exam type or subject' });
+        }
+
+        if (permissionRequest.status === 'pending') {
+            return res.status(403).json({ message: 'Your permission request is still pending' });
+        }
+
+        // Set cookies with the selected exam type and subject
+        res.cookie('examType', examType, { httpOnly: true });
+        res.cookie('subject', subject, { httpOnly: true });
+        res.cookie('branch', branch, { httpOnly: true });
+        res.cookie('division', division, { httpOnly: true });
+        res.cookie('level', level, { httpOnly: true });
+        res.cookie('school', school, { httpOnly: true });
+        res.cookie('semester', semester, { httpOnly: true });
+
+        res.status(200).json({ message: 'Exam type and subject selected' });
+    } catch (error) {
+        console.error('Error setting exam type and subject:', error);
+        res.status(500).json({ message: 'Error setting exam type and subject', error });
+    }
 }
 
 export const marksEntry = async (req, res) => {
