@@ -28,6 +28,43 @@ export const VERIFICATION_EMAIL_TEMPLATE = `
 </html>
 `;
 
+export const MARKS_REQUEST_APPROVAL = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Request Approved</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+  <div style="background: linear-gradient(to right, #4CAF50, #45a049); padding: 20px; text-align: center;">
+    <h1 style="color: white; margin: 0;">Request Approved</h1>
+  </div>
+  <div style="background-color: #f9f9f9; padding: 20px; border-radius: 0 0 5px 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+    <p>Hello,</p>
+    <p>Your Request for Inputting marks is Approved</p>
+    <ul>
+      <li>Level: {level}</li>
+      <li>Branch: {branch}</li>
+      <li>School: {school}</li>
+      <li>Division: {division}</li>
+      <li>Exam Type: {examType}</li>
+      <li>Semester: {semester}</li>
+      <li>Subject: {subject}</li>
+    </ul>
+    <p>Your Request Has been approved by the {HODName}</p>
+    <p>This Approval will expire within 7 days for security concerns.</p>
+    <p>If you didn't create this request, please ignore this email.</p>
+    <p>Best regards,<br>Code Red Team</p>
+  </div>
+  <div style="text-align: center; margin-top: 20px; color: #888; font-size: 0.8em;">
+    <p>This is an automated message, please do not reply to this email.</p>
+  </div>
+</body>
+</html>
+`;
+
+
 export const PASSWORD_RESET_SUCCESS_TEMPLATE = `
 <!DOCTYPE html>
 <html lang="en">

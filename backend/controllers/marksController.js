@@ -48,6 +48,12 @@ export const setExamTypeSubjectBranchDivision = async (req, res) => {
             return res.status(403).json({ message: 'Your permission request is still pending' });
         }
 
+        // **Check if the permission request has expired**
+        const now = new Date();
+        if (permissionRequest.expiresAt && permissionRequest.expiresAt < now) {
+            return res.status(403).json({ message: 'Your permission request has expired' });
+        }
+
         // Set cookies with the selected exam type and subject
         res.cookie('examType', examType, { httpOnly: true });
         res.cookie('subject', subject, { httpOnly: true });
@@ -119,8 +125,8 @@ export const uploadMarksSheet = async (req, res) => {
 
         const userId = req.user.userId; // Getting faculty ID from the logged-in user
 
-         // Check if the faculty has requested permission
-         const permissionRequest = await PermissionRequest.findOne({
+        // Check if the faculty has requested permission
+        const permissionRequest = await PermissionRequest.findOne({
             userId,
             examType,
             subject,
@@ -128,11 +134,19 @@ export const uploadMarksSheet = async (req, res) => {
             status: { $in: ['Pending', 'Approved'] }
         });
 
+
         if (!permissionRequest) {
             return res.status(400).json({ message: 'You have not requested permission for this exam type or subject' });
         }
 
-        if (permissionRequest.status === 'pending') {
+        // **Check if the permission request has expired**
+        const now = new Date();
+
+        if (permissionRequest.expiresAt && permissionRequest.expiresAt < now) {
+            return res.status(403).json({ message: 'Your permission request has expired' });
+        }
+
+        if (permissionRequest.status === 'Pending') {
             return res.status(403).json({ message: 'Your permission request is still pending' });
         }
 

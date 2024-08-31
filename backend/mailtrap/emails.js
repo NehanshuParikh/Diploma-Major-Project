@@ -1,6 +1,6 @@
 import { mailtrapClient, sender } from "./mailtrapConfig.js"
 import dotenv from 'dotenv';
-import { VERIFICATION_EMAIL_TEMPLATE, PASSWORD_RESET_SUCCESS_TEMPLATE, PASSWORD_RESET_REQUEST_TEMPLATE } from "./emailTemplates.js";
+import { VERIFICATION_EMAIL_TEMPLATE, PASSWORD_RESET_SUCCESS_TEMPLATE, PASSWORD_RESET_REQUEST_TEMPLATE, MARKS_REQUEST_APPROVAL } from "./emailTemplates.js";
 
 dotenv.config()
 
@@ -22,6 +22,32 @@ export const sendVerificationEmail = async (email, verificationToken) => {
 
     }
 }
+
+export const sendPermissionAprovedForMarksInputting = async (email, examType, subject, level, branch, school,semester,division, HODName) => {
+    const recipient = [{ email }];
+    try {
+        const response = await mailtrapClient.send({
+            from: sender,
+            to: recipient,
+            subject: 'Your permission to input marks has been approved',
+            html: MARKS_REQUEST_APPROVAL
+                .replace("{subject}", subject)
+                .replace("{examType}", examType)
+                .replace("{level}", level)
+                .replace("{branch}", branch)
+                .replace("{school}", school)
+                .replace("{semester}", semester)
+                .replace("{division}", division)
+                .replace("{HODName}", HODName),
+            category: "Permission Approval"
+        });
+        console.log("Email sent successfully");
+    } catch (error) {
+        console.error('Error while sending the email: ', error);
+        throw new Error('Error while sending the email');
+    }
+};
+
 export const sendWelcomeEmail = async (email) => {
     const receipent = [{ email }]
     try {

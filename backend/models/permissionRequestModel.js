@@ -33,6 +33,11 @@ const permissionRequestSchema = new mongoose.Schema({
         enum: ['Pending', 'Approved', 'Denied'],
         default: 'Pending',
     },
+    expiresAt: { 
+        type: Date,
+    },
 }, { timestamps: true });
+
+permissionRequestSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
 export const PermissionRequest = mongoose.model('PermissionRequest', permissionRequestSchema);
