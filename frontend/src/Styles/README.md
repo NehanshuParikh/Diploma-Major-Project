@@ -1,0 +1,3 @@
+we are using Tailwind CSS and applying styles inline via the className attribute, then we don't necessarily need a separate styles folder for CSS files. The index.css file with our Tailwind setup will handle all your styling needs.
+
+However, if we ever find needing to write custom CSS or extend Tailwind with additional styles, we can still create a styles folder. If this folder is never used then delete it in production environment otherwise keep it.

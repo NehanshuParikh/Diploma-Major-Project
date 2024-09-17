@@ -4,22 +4,22 @@ import { PermissionRequest } from '../models/permissionRequestModel.js';
 import { User } from '../models/userModel.js'; // Make sure you have a User model to get user details
 
 export const requestPermission = async (req, res) => {
-    const { school, branch, subject, semester, level, examType } = req.body;
-    const userId = req.user.userId; // Get faculty ID from the logged-in user
+    const { school, branch, subject, semester, level, examType, facultyName } = req.body;
+    const userId = req.user.userId;
 
-    if (!school || !branch || !subject || !semester || !level || !examType) {
+    console.log("Received facultyName:", facultyName); // Log the received facultyName
+
+    if (!school || !branch || !subject || !semester || !level || !examType || !facultyName) {
         return res.status(400).json({ message: 'All fields are required' });
     }
 
     try {
-        // Find the HOD for the given branch and school
         const hod = await User.findOne({ userType: 'HOD', department: branch, school: school });
 
         if (!hod) {
             return res.status(404).json({ message: 'HOD not found for the specified branch and school' });
         }
 
-        // Check if a permission request already exists for these details
         const existingRequest = await PermissionRequest.findOne({
             userId,
             school,
@@ -28,22 +28,14 @@ export const requestPermission = async (req, res) => {
             semester,
             level,
             examType,
+            facultyName,
             status: { $in: ['Pending', 'Approved'] }
         });
 
         if (existingRequest) {
             return res.status(400).json({ message: 'You have already requested permission for these details' });
         }
-        // if we want then we can create the feaure of faculty which reiuests the permission from the HOD will be expired within 7 days. if we want.
-        // // Set the expiration time (2 minutes for testing; use 24 hours for production)
-        // const duration = 2 * 60 * 1000; // 2 minutes
-        // const expiresAt = new Date(Date.now() + duration);
 
-        console.log("Creating PermissionRequest with the following details:");
-        console.log({ userId, userId: userId, school, branch, subject, semester, level, examType });
-
-
-        // Create a new permission request
         const newRequest = new PermissionRequest({
             userId,
             school,
@@ -52,7 +44,8 @@ export const requestPermission = async (req, res) => {
             semester,
             level,
             examType,
-            hodId: hod.userId, // Attach the HOD's ID to the request
+            hodId: hod.userId,
+            facultyName, // Ensure facultyName is included
             status: 'Pending',
         });
 
@@ -66,6 +59,7 @@ export const requestPermission = async (req, res) => {
 
 
 
+//  Controllers to see all permisions for HOD
 export const managePermissionRequests = async (req, res) => {
     try {
         const HODBranch = req.user.department;
@@ -147,3 +141,23 @@ export const manageFacultyPermissions = async (req, res) => {
         res.status(500).json({ message: 'Error retrieving your permissions', error });
     }
 };
+
+export const deletePermission = async (req, res) => {
+    try {
+      const { permissionId } = req.body; // Get permissionId from the request body
+  
+      // Check if the permissionId exists
+      const permission = await PermissionRequest.findById(permissionId);
+      if (!permission) {
+        return res.status(404).json({ message: 'Permission request not found' });
+      }
+  
+      // Delete the permission request from the database
+      await PermissionRequest.findByIdAndDelete(permissionId);
+  
+      res.status(200).json({ message: 'Permission request deleted successfully' });
+    } catch (error) {
+      console.error('Error deleting permission request:', error);
+      res.status(500).json({ message: 'Server error' });
+    }
+  };

@@ -2,7 +2,7 @@ import express from 'express'
 import { marksEntry, setExamTypeSubjectBranchDivision, uploadMarksSheet } from '../controllers/marksController.js'
 import multer from 'multer'
 import { verifyToken } from '../middleware/verifyToken.js'
-import { requestPermission, managePermissionRequests, manageFacultyPermissions, updatePermissionStatus } from '../controllers/permissionController.js'
+import { requestPermission, managePermissionRequests, manageFacultyPermissions, updatePermissionStatus, deletePermission } from '../controllers/permissionController.js'
 const router = express.Router()
 const upload = multer({ dest: "uploads/" })  // 'uploads' is at the same level as our server entry point
 
@@ -14,7 +14,7 @@ router.get('/managePermission', verifyToken, manageFacultyPermissions);
 router.post('/updatePermissionStatus', verifyToken, updatePermissionStatus);
 // Route for HOD to to view all their permissions
 router.post('/manage-permission',verifyToken, managePermissionRequests);
-
+router.delete('/deletePermission',verifyToken, deletePermission)
 
 router.post('/setExamTypeSubjectBranchDivision',verifyToken,setExamTypeSubjectBranchDivision)
 router.post('/marksEntry',verifyToken, marksEntry)

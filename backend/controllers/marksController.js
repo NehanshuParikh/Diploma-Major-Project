@@ -136,8 +136,9 @@ export const uploadMarksSheet = async (req, res) => {
 
 
         if (!permissionRequest) {
-            return res.status(400).json({ message: 'You have not requested permission for this exam type or subject' });
+            return res.status(403).json({ message: 'You do not have approved permission to upload the marks' });
         }
+
 
         // **Check if the permission request has expired**
         const now = new Date();
@@ -150,9 +151,6 @@ export const uploadMarksSheet = async (req, res) => {
             return res.status(403).json({ message: 'Your permission request is still pending' });
         }
 
-        if (!permissionRequest) {
-            return res.status(403).json({ message: 'You do not have approved permission for this exam type or subject' });
-        }
 
         // Read the Excel file
         const workbook = xlsx.readFile(file.path);
@@ -193,4 +191,3 @@ export const uploadMarksSheet = async (req, res) => {
         res.status(500).json({ message: 'Error uploading marks in bulk', error });
     }
 };
-

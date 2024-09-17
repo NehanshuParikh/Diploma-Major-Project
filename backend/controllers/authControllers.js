@@ -124,6 +124,7 @@ export const login = async (req, res) => {
 export const logout = async (req, res) => {
     res.clearCookie("token"); // Corrected method name (clearCookie)
     res.status(200).json({ success: true, message: "Logged Out Successfully" }); // Fixed typo in message key
+    console.log('User Logged Out')
 };
 
 export const verifyEmail = async (req, res) => {
@@ -148,22 +149,22 @@ export const verifyEmail = async (req, res) => {
         // Logging to check if the user was found and saved
         console.log('User verified and saved:', user);
 
-        // Check userType and redirect accordingly
-        if (user.userType === 'Faculty' || user.userType === 'HOD') {
-            return res.status(200).json({ message: 'Login successful', redirectTo: '/api/marksManagement' });
-        } else if (user.userType === 'Student') {
-            return res.status(200).json({ message: 'Login successful', redirectTo: '/api/studentDashboard' });
-        } else {
-            return res.status(400).json({ message: 'Invalid userType' });
-        }
-
         // Sending the welcome email
         await sendWelcomeEmail(user.email);
 
         // Logging to check if the email was sent
         console.log('Welcome email sent to:', user.email);
 
-        res.status(200).json({ success: true, message: "Email verified successfully", user: { ...user._doc, password: undefined } });
+        // Check userType and redirect accordingly
+        if (user.userType === 'Faculty') {
+            return res.status(200).json({ message: 'Login successful',userType: user.userType});
+        } else if (user.userType === 'HOD') {
+            return res.status(200).json({ message: 'Login successful',userType: user.userType});
+        } else if (user.userType === 'Student') {
+            return res.status(200).json({ message: 'Login successful',userType: user.userType});
+        } else {
+            return res.status(400).json({ message: 'Invalid userType' });
+        }
     } catch (error) {
         console.error('Error during email verification:', error);
         res.status(500).json({ success: false, message: error.message });
@@ -199,12 +200,14 @@ export const loginVerify = async (req, res) => {
         console.log('User verified and logged in successfully'); // Debugging: Log success
 
         // Check userType and redirect accordingly
-        if (user.userType === 'Faculty' || user.userType === 'HOD') {
-            return res.status(200).json({ message: 'Login successful', redirectTo: '/api/marksManagement' });
+        if (user.userType === 'Faculty') {
+            return res.status(200).json({ success: true, message: 'Login successful', userType: user.userType});
         } else if (user.userType === 'Student') {
-            return res.status(200).json({ message: 'Login successful', redirectTo: '/api/studentDashboard' });
+            return res.status(200).json({ success: true, message: 'Login successful', userType: user.userType});
+        } else if (user.userType === 'HOD') {
+            return res.status(200).json({ success: true, message: 'Login successful', userType: user.userType});
         } else {
-            return res.status(400).json({ message: 'Invalid userType' });
+            return res.status(400).json({ success: false, message: 'Invalid userType' });
         }
 
     } catch (error) {
@@ -232,7 +235,7 @@ export const forgotPassword = async (req, res) => {
         await user.save();
 
         // Send reset email
-        await sendPasswordResetEmail(user.email, user.userId, `${process.env.CLIENT_URL}/reset-password/${resetToken}`);
+        await sendPasswordResetEmail(user.email, user.userId, `${process.env.CLIENT_URL}/api/auth/reset-password/${resetToken}`);
         res.status(200).json({ success: true, message: "Reset Email Sent successfully" });
 
     } catch (error) {

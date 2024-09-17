@@ -7,7 +7,7 @@ export const verifyToken = async (req, res, next) => {
 
     // If not in cookies, check in the headers
     if (!token) {
-        token = req.headers['authorization']?.split(' ')[1]; // Authorization: Bearer <token>
+        token = req.headers['authorization']?.split(' ')[1]; // Bearer <token>
     }
 
     // Log to check where the token is coming from

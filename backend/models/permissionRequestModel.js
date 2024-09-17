@@ -28,12 +28,15 @@ const permissionRequestSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    facultyName: {
+        type: String,
+    },
     status: {
         type: String,
-        enum: ['Pending', 'Approved', 'Denied'],
+        enum: ['Pending', 'Approved', 'Rejected'],
         default: 'Pending',
     },
-    expiresAt: { 
+    expiresAt: {
         type: Date,
     },
 }, { timestamps: true });
