@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import DashboardLayout from '../../../../Components/DashboardComponents/DashboardLayout';
 import { toast } from 'react-hot-toast';
 import { useLoading } from '../../../../Context/LoadingContext';
+import { useNavigate } from 'react-router';
 
 const BASEURL = 'http://localhost:5000/api/marksManagement';
 
@@ -19,7 +20,7 @@ const MarksInManualForm = () => {
     });
 
     const { setLoading } = useLoading();
-
+    const Navigate = useNavigate()
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
@@ -63,6 +64,7 @@ const MarksInManualForm = () => {
                 toast.success(responseData.message);
                 // Redirect to marks input page after successful form submission
                 // Implement the redirection logic here
+                Navigate(`/api/dashboard/marks-management/addmarks/manually/input`)
             } else {
                 toast.error(responseData.message || 'An error occurred');
             }
@@ -81,8 +83,8 @@ const MarksInManualForm = () => {
                     <select name="examType" id="examType" onChange={handleChange}
                         className="mb-4 p-2 border-grey-50 text-black border-[.5px] border-slate-500 rounded w-full dark:bg-[#1D2A39] dark:text-white">
                         <option value="Default" defaultChecked>Select Exam Type</option>
-                        <option value="Mid-1">Mid-1</option>
-                        <option value="Mid-2">Mid-2</option>
+                        <option value="Mid-Sem-1">Mid-1</option>
+                        <option value="Mid-Sem-2">Mid-2</option>
                         <option value="External">External</option>
                     </select>
                     <input

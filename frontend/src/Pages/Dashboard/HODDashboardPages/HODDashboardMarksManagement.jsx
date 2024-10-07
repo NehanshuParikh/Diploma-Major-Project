@@ -7,10 +7,10 @@ const HODDashboardMarksManagement = () => {
   const navigate = useNavigate();
   const handleExcelUpload = () => {
     // Navigate to the bulk upload page when the user clicks the div
-    navigate('/api/dashboard/HOD-dashboard/marks-management/addmarks/inbulk');
+    navigate('/api/dashboard/marks-management/addmarks/inbulk');
   };
   const handleManualUpload = ()=>{
-    navigate('/api/dashboard/HOD-dashboard/marks-management/addmarks/manually');
+    navigate('/api/dashboard/marks-management/addmarks/manually');
   }
 
   return (

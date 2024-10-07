@@ -1,163 +1,157 @@
-// controllers/permissionController.js
-import { sendPermissionAprovedForMarksInputting } from '../mailtrap/emails.js';
-import { PermissionRequest } from '../models/permissionRequestModel.js';
-import { User } from '../models/userModel.js'; // Make sure you have a User model to get user details
+import { Permission } from '../models/permissionModel.js';
+import { Marks } from '../models/marksModel.js';  // Assuming you have this already
+import { User } from '../models/userModel.js';
 
-export const requestPermission = async (req, res) => {
-    const { school, branch, subject, semester, level, examType, facultyName } = req.body;
-    const userId = req.user.userId;
-
-    console.log("Received facultyName:", facultyName); // Log the received facultyName
-
-    if (!school || !branch || !subject || !semester || !level || !examType || !facultyName) {
-        return res.status(400).json({ message: 'All fields are required' });
-    }
-
+export const assignDuty = async (req, res) => {
     try {
-        const hod = await User.findOne({ userType: 'HOD', department: branch, school: school });
-
-        if (!hod) {
-            return res.status(404).json({ message: 'HOD not found for the specified branch and school' });
-        }
-
-        const existingRequest = await PermissionRequest.findOne({
-            userId,
-            school,
-            branch,
+        const {
+            facultyIdOrFullName,
             subject,
-            semester,
-            level,
             examType,
-            facultyName,
-            status: { $in: ['Pending', 'Approved'] }
-        });
-
-        if (existingRequest) {
-            return res.status(400).json({ message: 'You have already requested permission for these details' });
-        }
-
-        const newRequest = new PermissionRequest({
-            userId,
-            school,
             branch,
-            subject,
             semester,
-            level,
-            examType,
-            hodId: hod.userId,
-            facultyName, // Ensure facultyName is included
-            status: 'Pending',
-        });
+            division,
+            school,
+            level
+        } = req.body;
 
-        await newRequest.save();
-        res.status(201).json({ message: 'Permission request submitted successfully', newRequest });
-    } catch (error) {
-        console.error('Error requesting permission:', error);
-        res.status(500).json({ message: 'Error requesting permission', error });
-    }
-};
+        const hodId = req.user.id;  // HOD's ID from token
 
+        let faculty;
+        const cleanedInput = facultyIdOrFullName.trim();  // Clean the input
 
-
-//  Controllers to see all permisions for HOD
-export const managePermissionRequests = async (req, res) => {
-    try {
-        const HODBranch = req.user.department;
-        const HODSchool = req.user.school;
-
-        const allPermissions = await PermissionRequest.find({
-            branch: HODBranch,
-            school: HODSchool,
-        })
-
-        console.log(allPermissions);
-        res.status(201).json({ message: 'Here are the all permissions that are related to your department and school', allPermissions });
-    } catch (error) {
-        console.error('Error managing permission controller:', error);
-        res.status(500).json({ message: 'Error showing permission', error });
-    }
-};
-
-// Controller to update permission status
-export const updatePermissionStatus = async (req, res) => {
-    try {
-        const { permissionId, status } = req.body; // Expecting permissionId and status (approved/rejected) from the request body
-
-        if (!['Approved', 'Rejected'].includes(status)) {
-            return res.status(400).json({ message: 'Invalid status. Please provide either "approved" or "rejected".' });
-        }
-
-        // Find the permission request by ID
-        const permissionRequest = await PermissionRequest.findById(permissionId);
-        if (!permissionRequest) {
-            return res.status(404).json({ message: 'Permission request not found.' });
-        }
-
-        // Update the status of the permission request
-        permissionRequest.status = status;
-
-        // If the status is 'Approved', set the expiration time (e.g., 2 minutes from now)
-        if (status === 'Approved') {
-            // const expirationDuration = 2 * 60 * 1000; // 2 minutes in milliseconds DEVELOPEMENT PURPOSE
-            const expirationDuration = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds PROUCTION PURPOSE
-            permissionRequest.expiresAt = new Date(Date.now() + expirationDuration);
-            const user = await User.findOne({ userId: permissionRequest.userId });
-            if (user) {
-                const HODDets = await User.findOne({ userId: permissionRequest.hodId});
-                await sendPermissionAprovedForMarksInputting(user.email, permissionRequest.examType, permissionRequest.subject, permissionRequest.level, permissionRequest.branch, permissionRequest.school,permissionRequest.semester,permissionRequest.division,HODDets.fullname);
-            } else {
-                return res.status(404).json({ message: 'User not found.' });
-            }
-
+        // Check if the input is a userId or fullName
+        if (/^[\w-]+$/.test(cleanedInput)) {
+            faculty = await User.findOne({ userId: cleanedInput });
         } else {
-            // If rejected, remove the expiration time
-            permissionRequest.expiresAt = null;
+            faculty = await User.findOne({ fullname: new RegExp(`^${cleanedInput}$`, 'i') });
         }
 
-        await permissionRequest.save();
+        if (!faculty) {
+            return res.status(404).json({ message: 'Faculty not found' });
+        }
 
-        // Send a notification or simply return the updated status to be checked by the faculty
-        res.status(200).json({ message: `Permission request has been ${status}.`, permissionRequest });
+        // Normalize fields to lowercase
+        const normalizedSubject = subject.trim().toLowerCase();
+        const normalizedExamType = examType.trim().toLowerCase();
+        const normalizedBranch = branch.trim().toLowerCase();
+        const normalizedSchool = school.trim().toLowerCase();
+        const normalizedLevel = level.trim().toLowerCase();
+        const normalizedDivision = division.trim();
+        const normalizedSemester = semester.trim();
+
+        const existingPermission = await Permission.findOne({
+            facultyId: faculty.userId,
+            subject: normalizedSubject,
+            examType: normalizedExamType,
+            semester: normalizedSemester,
+            branch: normalizedBranch,
+            division: normalizedDivision,
+            level: normalizedLevel,
+            school: normalizedSchool,
+        });
+
+        if (existingPermission) {
+            return res.status(400).json({ message: 'This duty has already been assigned to the faculty' });
+        }
+
+        // Set expiresAt to 15 days from now
+        const expiresAt = new Date();
+        expiresAt.setDate(expiresAt.getDate() + 15);
+
+        const newPermission = new Permission({
+            hodId,
+            facultyId: faculty.userId,
+            facultyName: faculty.fullname,
+            subject: normalizedSubject,
+            examType: normalizedExamType,
+            branch: normalizedBranch,
+            semester: normalizedSemester,
+            division: normalizedDivision,
+            school: normalizedSchool,
+            level: normalizedLevel,
+            dutyName: `${normalizedExamType}-${normalizedLevel}-${normalizedBranch}-${normalizedSchool}-${normalizedSubject}`,
+            status: 'Pending',
+            expiresAt,  // Set the expiration date
+        });
+
+        await newPermission.save();
+
+        res.status(201).json({ message: 'Duty assigned successfully', permission: newPermission });
+    } catch (error) {
+        console.error('Error assigning duty:', error);
+        res.status(500).json({ message: 'Error assigning duty', error });
+    }
+};
+
+// Update the status of permission when marks are entered
+export const updatePermissionStatus = async (facultyId, subject, examType, semester) => {
+    try {
+        // Update permission to "Completed"
+        await Permission.findOneAndUpdate(
+            { facultyId, subject, examType, semester },
+            { status: 'Completed', marksSubmitted: true },
+            { new: true }
+        );
     } catch (error) {
         console.error('Error updating permission status:', error);
-        res.status(500).json({ message: 'Error updating permission status', error });
     }
 };
 
-// Faculty Member checking their permission status
-export const manageFacultyPermissions = async (req, res) => {
+export const viewAssignedDuties = async (req, res) => {
     try {
-        const facultyId = req.user.userId;
+        const hodId = req.user.id;
 
-        // Find all permission requests made by the faculty
-        const facultyPermissions = await PermissionRequest.find({
-            facultyId,
-            expiresAt: { $gte: new Date.now() }
-        });
+        // Fetch permissions for the HOD
+        const permissions = await Permission.find({ hodId });
 
-        res.status(200).json({ message: 'Here are your permission requests:', facultyPermissions });
+        // Retrieve faculty details for each permission
+        const facultyIds = permissions.map(permission => permission.facultyId); // Get all facultyIds
+        const faculties = await User.find({ userId: { $in: facultyIds } }); // Find all faculty members based on userId
+
+        // Create a mapping of facultyId to user details
+        const facultyMap = faculties.reduce((acc, faculty) => {
+            acc[faculty.userId] = faculty;
+            return acc;
+        }, {});
+
+        // Combine permissions with faculty details
+        const detailedPermissions = permissions.map(permission => ({
+            ...permission.toObject(), // Convert to plain object
+            faculty: facultyMap[permission.facultyId] || null // Attach faculty details
+        }));
+
+        res.status(200).json({ message: 'Permissions fetched successfully', permissions: detailedPermissions });
     } catch (error) {
-        console.error('Error managing faculty permissions:', error);
-        res.status(500).json({ message: 'Error retrieving your permissions', error });
+        console.error('Error fetching permissions:', error);
+        res.status(500).json({ message: 'Error fetching permissions', error });
     }
 };
 
-export const deletePermission = async (req, res) => {
+// View duties for Faculty (all permissions assigned to them)
+export const viewFacultyDuties = async (req, res) => {
     try {
-      const { permissionId } = req.body; // Get permissionId from the request body
-  
-      // Check if the permissionId exists
-      const permission = await PermissionRequest.findById(permissionId);
-      if (!permission) {
-        return res.status(404).json({ message: 'Permission request not found' });
-      }
-  
-      // Delete the permission request from the database
-      await PermissionRequest.findByIdAndDelete(permissionId);
-  
-      res.status(200).json({ message: 'Permission request deleted successfully' });
+        const facultyId = req.user.userId; // Assuming facultyId is stored in the token
+
+        // Fetch permissions for the faculty using facultyId directly from the Permission model
+        const permissions = await Permission.find({ facultyId }) // Match permissions by facultyId
+            .populate('hodId', 'fullname email'); // Populate HOD details
+
+        // Check if permissions are found
+        if (permissions.length === 0) {
+            return res.status(404).json({ message: 'No duties assigned to this faculty.' });
+        }
+
+        // Create detailed permissions array
+        const detailedPermissions = permissions.map(permission => ({
+            ...permission.toObject(), // Convert to plain object
+            hodId: permission.hodId, // Include HOD details
+        }));
+
+        res.status(200).json({ message: 'Duties fetched successfully', permissions: detailedPermissions });
     } catch (error) {
-      console.error('Error deleting permission request:', error);
-      res.status(500).json({ message: 'Server error' });
+        console.error('Error fetching duties:', error);
+        res.status(500).json({ message: 'Error fetching duties', error });
     }
-  };
+};
+

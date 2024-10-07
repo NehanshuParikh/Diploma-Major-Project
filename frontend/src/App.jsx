@@ -17,11 +17,13 @@ import HODDashboardAttendenceManagement from './Pages/Dashboard/HODDashboardPage
 import HODDashboardPermissions from './Pages/Dashboard/HODDashboardPages/HODDashboardPermissions';
 import MarksInBulkForm from './Pages/Dashboard/HODDashboardPages/MarksManagementForms/MarksInBulkForm';
 import MarksInManualForm from './Pages/Dashboard/HODDashboardPages/MarksManagementForms/MarksInManualForm';
-import RequestingPermission from './Pages/Dashboard/HODDashboardPages/MarksManagementForms/RequestingPermission';
-import ManagingRequest from './Pages/Dashboard/HODDashboardPages/MarksManagementForms/ManagingRequest';
+import AssigningDuty from './Pages/Dashboard/HODDashboardPages/MarksManagementForms/AssigningDuty';
+import HODManagingDuty from './Pages/Dashboard/HODDashboardPages/MarksManagementForms/HODManagingPermission';
+import FacultyManagingDuty from './Pages/Dashboard/HODDashboardPages/MarksManagementForms/FacultyManagingDuty';
 import FacultyDashboard from './Pages/Dashboard/FacultyDashboardPages/FacultyDashboardHome';
 import StudentDashboard from './Pages/Dashboard/StudentDashboardPages/StudentDashboardHome';
 import HODDashboardReport from './Pages/Dashboard/HODDashboardPages/HODDashboardReport';
+import MarksInputPage from './Pages/Dashboard/HODDashboardPages/MarksManagementForms/MarksInputPage';
 function App() {
   const { loading } = useLoading();
   return (
@@ -43,13 +45,15 @@ function App() {
               <Route path="/api/auth/login-verify" element={<LoginVerify />} />
               <Route path="/api/auth/forgot-password" element={<ForgotPassword />} />
               <Route path="/api/auth/reset-password/:token" element={<ResetPassword />} />
-              <Route path="/api/dashboard/HOD-dashboard" element={<HODDashboardHome />} />
-              <Route path="/api/dashboard/HOD-dashboard/marks-management/addmarks" element={<HODDashboardMarksManagement />} />
-              <Route path="/api/dashboard/HOD-dashboard/marks-management/addmarks/inbulk" element={<MarksInBulkForm />} />
-              <Route path="/api/dashboard/HOD-dashboard/marks-management/addmarks/manually" element={<MarksInManualForm />} />
-              <Route path="/api/dashboard/HOD-dashboard/marks-management/permissions" element={<HODDashboardPermissions />} />
-              <Route path="/api/dashboard/HOD-dashboard/marks-management/permissions/request" element={<RequestingPermission />} />
-              <Route path="/api/dashboard/HOD-dashboard/marks-management/permissions/manage" element={<ManagingRequest />} />
+              <Route path="/api/dashboard/" element={<HODDashboardHome />} />
+              <Route path="/api/dashboard/marks-management/addmarks" element={<HODDashboardMarksManagement />} />
+              <Route path="/api/dashboard/marks-management/addmarks/inbulk" element={<MarksInBulkForm />} />
+              <Route path="/api/dashboard/marks-management/addmarks/manually" element={<MarksInManualForm />} />
+              <Route path="/api/dashboard/marks-management/addmarks/manually/input" element={<MarksInputPage />} />
+              <Route path="/api/dashboard/marks-management/permissions" element={<HODDashboardPermissions />} />
+              <Route path="/api/dashboard/marks-management/permissions/assign-duty" element={<AssigningDuty />} />
+              <Route path="/api/dashboard/marks-management/permissions/HOD-viewing-panel" element={<HODManagingDuty />} />
+              <Route path="/api/dashboard/marks-management/permissions/Faculty-viewing-panel" element={<FacultyManagingDuty />} />
               <Route path="/api/reports/student-report" element={<HODDashboardReport />} />
               <Route path="/api/dashboard/HOD-dashboard/attendence-management" element={<HODDashboardAttendenceManagement />} />
               <Route path="/api/dashboard/Faculty-dashboard" element={<FacultyDashboard />} />

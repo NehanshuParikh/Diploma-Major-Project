@@ -31,7 +31,7 @@ const LoginVerify = () => {
       setLoading(false); // stopping the loader
       if (data.success) {
         console.log('Backend Response Data:', data);
-        navigate(`/api/dashboard/${data.userType}-dashboard`);
+        navigate(`/api/dashboard/`);
       } else {
         setLoading(false) // stopping the loader
         toast.error(data.message);        

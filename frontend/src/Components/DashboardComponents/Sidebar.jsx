@@ -37,8 +37,6 @@ const Sidebar = ({ isOpen, toggleSidebar, userType }) => {
               <p className="text-xs lg:text-sm text-gray-300">Email: {profileData.email}</p>
               <p className="text-xs lg:text-sm text-gray-300">Mobile: {profileData.mobileNumber}</p>
               <p className="text-xs lg:text-sm text-gray-300">Designation: {profileData.userType}</p>
-              {/* Display facultyName */}
-              <p className="text-xs lg:text-sm text-gray-300">Faculty Name: {profileData.facultyName}</p>
             </>
           ) : (
             <div className="text-white">Profile not found</div>
@@ -55,7 +53,7 @@ const Sidebar = ({ isOpen, toggleSidebar, userType }) => {
       {/* Sidebar navigation */}
       <nav className="p-4">
         {/* Home Link */}
-        <Link to={userType === 'HOD' ? `${BASEURL}/dashboard/HOD-dashboard` : userType === 'Faculty' ? `${BASEURL}/dashboard/faculty-dashboard` : `${BASEURL}/dashboard/student-dashboard`} className="block text-white p-2 mb-4 hover:bg-slate-700 rounded">
+        <Link to={userType === 'HOD' ? `${BASEURL}/dashboard/` : userType === 'Faculty' ? `${BASEURL}/dashboard/faculty-dashboard` : `${BASEURL}/dashboard/student-dashboard`} className="block text-white p-2 mb-4 hover:bg-slate-700 rounded">
           <FaHome className="inline-block mr-2" /> Home
         </Link>
 
@@ -72,10 +70,10 @@ const Sidebar = ({ isOpen, toggleSidebar, userType }) => {
           </div>
           {isMarksDropdownOpen && (
             <div className="pl-4 mt-2 space-y-2">
-              <Link to={`${BASEURL}/dashboard/HOD-dashboard/marks-management/addmarks`} className="block text-white p-2 hover:bg-slate-700 rounded">
+              <Link to={`${BASEURL}/dashboard/marks-management/addmarks`} className="block text-white p-2 hover:bg-slate-700 rounded">
                 Add Marks
               </Link>
-              <Link to={`${BASEURL}/dashboard/HOD-dashboard/marks-management/permissions`} className="block text-white p-2 hover:bg-slate-700 rounded">
+              <Link to={`${BASEURL}/dashboard/marks-management/permissions`} className="block text-white p-2 hover:bg-slate-700 rounded">
                 Permissions
               </Link>
             </div>
