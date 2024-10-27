@@ -8,3 +8,6 @@ Things Done in the ratest Commit:
 3. All the profile photos are uploaded at Cloudinary.
 4. Profile Details with profile photo is shown on Dashboard.
 5. And Implemented Edit Profile Details for particular or selected fields.
+
+Things Not Working:
+1. HOD is not able to signing up. ( Showing Student Already Exists problem in signup controller ).
