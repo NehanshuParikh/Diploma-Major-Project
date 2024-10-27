@@ -1,6 +1,6 @@
 import { Permission } from '../models/permissionModel.js';
 import { Marks } from '../models/marksModel.js';  // Assuming you have this already
-import { User } from '../models/userModel.js';
+import { Staff } from '../models/staffModel.js';
 
 export const assignDuty = async (req, res) => {
     try {
@@ -22,9 +22,9 @@ export const assignDuty = async (req, res) => {
 
         // Check if the input is a userId or fullName
         if (/^[\w-]+$/.test(cleanedInput)) {
-            faculty = await User.findOne({ userId: cleanedInput });
+            faculty = await Staff.findOne({ userId: cleanedInput });
         } else {
-            faculty = await User.findOne({ fullname: new RegExp(`^${cleanedInput}$`, 'i') });
+            faculty = await Staff.findOne({ fullname: new RegExp(`^${cleanedInput}$`, 'i') });
         }
 
         if (!faculty) {
@@ -107,7 +107,7 @@ export const viewAssignedDuties = async (req, res) => {
 
         // Retrieve faculty details for each permission
         const facultyIds = permissions.map(permission => permission.facultyId); // Get all facultyIds
-        const faculties = await User.find({ userId: { $in: facultyIds } }); // Find all faculty members based on userId
+        const faculties = await Staff.find({ userId: { $in: facultyIds } }); // Find all faculty members based on userId
 
         // Create a mapping of facultyId to user details
         const facultyMap = faculties.reduce((acc, faculty) => {

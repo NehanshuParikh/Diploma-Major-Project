@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const userSchema = new mongoose.Schema({
+const staffSchema = new mongoose.Schema({
     userId:{
         type: String,
         required: true,
@@ -17,10 +17,14 @@ const userSchema = new mongoose.Schema({
     },
     userType: {
         type: String,
-        enum: ['HOD', 'Faculty', 'Student'], // Restrict the values to specific roles
+        enum: ['HOD', 'Faculty'], // Restrict the values to specific roles
         required: true
     },
-    fullname:{
+    profilePhoto: {
+        type: String, // cloudinary photo url will come here.
+        required: true
+    },
+    fullName:{
         type:String,
         require: true
     },
@@ -44,15 +48,17 @@ const userSchema = new mongoose.Schema({
     verificationToken: String,
     // the token or otp which we will send through email for verifing the user will be expired in this much time
     verificationTokenExpiresAt: Date,
-    department: {
-        type: String,
-        enum: ['IT', 'Mechanical'], // Add more departments as needed
+    branch: {
+        type: [String],  // Allow an array of strings
+        enum: ['IT', 'CSE'], // Add more schools as needed
+        required: true
     },
     school: {
-        type: String,
-        enum: ['KSDS', 'KSET', 'KSBM'], // Add more schools as needed
+        type: [String],  // Allow an array of strings
+        enum: ['KSDS', 'KSET'], // Add more schools as needed
+        required: true
     }
 
 },{ timestamps: true })
 
-export const User = mongoose.model('User', userSchema);
+export const Staff = mongoose.model('Staff', staffSchema);

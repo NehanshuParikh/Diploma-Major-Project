@@ -25,17 +25,22 @@ const VerifyEmail = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ code }),
+        credentials: 'include'
       });
 
       const data = await response.json();
       setLoading(false);
       console.log('Backend Response Data:', data);
       // Redirect to login page after successful signup verification
-      navigate(`/api/dashboard/${data.userType}-dashboard`);
+      if (data.userType == undefined) {
+        navigate(`/api/dashboard/student-dashboard`);
+      } else {
+        navigate(`/api/dashboard/${data.userType}-dashboard`);
+      }
     } catch (error) {
       console.error('Error:', error);
       setLoading(false);
-      toast.error(data.message);
+      toast.error(error.message);
     }
   };
 

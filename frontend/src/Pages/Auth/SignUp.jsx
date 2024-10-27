@@ -1,13 +1,10 @@
-//  This Page / Component works with SIGNUP request in backend
-
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useLoading } from '../../Context/LoadingContext';
 import toast from 'react-hot-toast';
-import { FaEye, FaEyeSlash } from 'react-icons/fa'
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
 const BASE_URL = 'http://localhost:5000/api';
-
 
 function Signup() {
   const [formData, setFormData] = useState({
@@ -15,10 +12,12 @@ function Signup() {
     email: '',
     password: '',
     userType: '',
-    fullname: '',
+    fullName: '',
     mobile: '',
-    department: '',
-    school: ''
+    branch: '',
+    school: '',
+    profilePhoto: null, // File upload
+    level: '', // Only for students
   });
 
   const [passwordValidation, setPasswordValidation] = useState({
@@ -27,17 +26,16 @@ function Signup() {
     hasUppercase: false,
     hasDigit: false,
     hasSpecialChar: false,
-    isNotCommon: true // Assuming this is true unless common elements are found
+    isNotCommon: true,
   });
+
   const [showPassword, setShowPassword] = useState(false); // State to toggle password visibility
+  const { setLoading } = useLoading();
+  const navigate = useNavigate();
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
-
-
-  const navigate = useNavigate();
-  const { setLoading } = useLoading();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -48,12 +46,20 @@ function Signup() {
 
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [name]: value,
+    });
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    setFormData({
+      ...formData,
+      profilePhoto: file,
     });
   };
 
   const validatePassword = (password) => {
-    const emailUserCheck = `${formData.email}|${formData.userId}|${formData.fullname}|${formData.department}|${formData.school}`;
+    const emailUserCheck = `${formData.email}|${formData.userId}|${formData.fullName}|${formData.branch}|${formData.school}`;
     setPasswordValidation({
       minLength: password.length >= 8,
       hasLowercase: /[a-z]/.test(password),
@@ -61,27 +67,38 @@ function Signup() {
       hasDigit: /\d/.test(password),
       hasSpecialChar: /[!@#$%^&*(),.?":{}|<>]/.test(password),
       isNotCommon: !new RegExp(emailUserCheck, 'i').test(password),
-
     });
   };
-
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+
+    const formDataToSend = new FormData();
+    formDataToSend.append('userId', formData.userId);
+    formDataToSend.append('email', formData.email);
+    formDataToSend.append('password', formData.password);
+    formDataToSend.append('userType', formData.userType);
+    formDataToSend.append('fullName', formData.fullName);
+    formDataToSend.append('mobile', formData.mobile);
+    formDataToSend.append('branch', formData.branch);
+    formDataToSend.append('school', formData.school);
+    formDataToSend.append('profilePhoto', formData.profilePhoto); // File upload
+
+    if (formData.userType === 'Student') {
+      formDataToSend.append('level', formData.level); // Append level if userType is Student
+    }
+
     try {
       const response = await fetch(`${BASE_URL}/auth/signup`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
+        body: formDataToSend, // Use FormData for file upload
       });
 
       const data = await response.json();
       setLoading(false);
       if (data.success) {
-        navigate(`/api/auth/verify-email`); // Redirect to signup verification
+        navigate(`/api/auth/verify-email`);
       } else {
         toast.error(data.message);
       }
@@ -131,10 +148,11 @@ function Signup() {
             Faculty
           </label>
         </div>
+
         <input
           type="text"
           name="userId"
-          placeholder="User ID / Enrollement ID"
+          placeholder="User ID / Enrollment ID"
           value={formData.userId}
           onChange={handleChange}
           className="mb-4 p-2 border border-gray-300 rounded w-full"
@@ -148,14 +166,16 @@ function Signup() {
           onChange={handleChange}
           className="mb-4 p-2 border border-gray-300 rounded w-full"
         />
+
         <input
           type="text"
-          name="fullname"
+          name="fullName"
           placeholder="Full Name"
-          value={formData.fullname}
+          value={formData.fullName}
           onChange={handleChange}
           className="mb-4 p-2 border border-gray-300 rounded w-full"
         />
+
         <input
           type="text"
           name="mobile"
@@ -165,17 +185,41 @@ function Signup() {
           className="mb-4 p-2 border border-gray-300 rounded w-full"
         />
 
-        <select name="department" id="deparment" className="mb-4 p-2 border border-gray-300 rounded w-full" onChange={handleChange}>
-          <option defaultChecked>Select Department</option>
+        <select
+          name="branch"
+          id="branch"
+          value={formData.branch}
+          onChange={handleChange}
+          className="mb-4 p-2 border border-gray-300 rounded w-full"
+        >
+          <option value="">Select Branch</option>
           <option value="IT">IT</option>
           <option value="CSE">CSE</option>
         </select>
 
-        <select name="school" id="school" className="mb-4 p-2 border border-gray-300 rounded w-full" onChange={handleChange}>
-          <option defaultChecked>Select School</option>
+        <select
+          name="school"
+          id="school"
+          value={formData.school}
+          onChange={handleChange}
+          className="mb-4 p-2 border border-gray-300 rounded w-full"
+        >
+          <option value="">Select School</option>
           <option value="KSET">KSET</option>
           <option value="KSDS">KSDS</option>
         </select>
+
+        {/* Conditionally render the level input field for Students */}
+        {formData.userType === 'Student' && (
+          <input
+            type="text"
+            name="level"
+            placeholder="Level"
+            value={formData.level}
+            onChange={handleChange}
+            className="mb-4 p-2 border border-gray-300 rounded w-full"
+          />
+        )}
 
         <div className="mb-4 relative">
           <input
@@ -186,22 +230,21 @@ function Signup() {
             onChange={handleChange}
             className="p-2 border border-gray-300 rounded w-full"
           />
-          <span
-            className="absolute right-3 top-3 cursor-pointer"
-            onClick={togglePasswordVisibility}
-          >
+          <span className="absolute right-3 top-3 cursor-pointer" onClick={togglePasswordVisibility}>
             {showPassword ? <FaEyeSlash /> : <FaEye />}
           </span>
         </div>
-        <ul className='mb-4'>
+
+        {/* Password Validation Messages */}
+        <ul className="mb-4">
           <li style={{ color: passwordValidation.minLength ? 'green' : 'red' }}>
             👉 Password should be at least 8 characters long
           </li>
           <li style={{ color: passwordValidation.hasLowercase ? 'green' : 'red' }}>
-            👉 Must contain at least 1 lowercase alphabet
+            👉 Must contain at least 1 lowercase letter
           </li>
           <li style={{ color: passwordValidation.hasUppercase ? 'green' : 'red' }}>
-            👉 Must contain at least 1 uppercase alphabet
+            👉 Must contain at least 1 uppercase letter
           </li>
           <li style={{ color: passwordValidation.hasDigit ? 'green' : 'red' }}>
             👉 Must contain at least 1 digit
@@ -214,13 +257,23 @@ function Signup() {
           </li>
         </ul>
 
+
+        <label className="mr-2">Profile Photo: </label>
+        <input
+          type="file"
+          name="profilePhoto"
+          onChange={handleFileChange}
+          className="mb-4 p-2 border border-gray-300 rounded w-full"
+          placeholder='Profile Photo'
+        />
+
         <button
           type="submit"
-          className="bg-blue-500 text-white p-2 rounded w-full hover:bg-blue-600"
+          className="bg-blue-500 text-white py-2 px-4 rounded w-full hover:bg-blue-600"
         >
           Signup
         </button>
-        <Link to="/api/auth/login" className="block text-center mt-4 text-blue-500 hover:underline">Already a user? Login Here</Link> {/* Use Link component */}
+        <Link to="/api/auth/login" className="text-center text-sm text-gray-600 mt-4 block">Already have an account? Login here</Link>
       </form>
     </div>
   );

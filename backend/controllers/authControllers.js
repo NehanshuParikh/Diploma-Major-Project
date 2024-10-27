@@ -1,4 +1,5 @@
-import { User } from "../models/userModel.js";
+import { Staff } from "../models/staffModel.js";
+import { Student } from "../models/studentModel.js";
 import bcrypt from 'bcryptjs';
 import { generateTokenAndSetCookie } from "../utils/generateTokenAndSetCookie.js";
 import { sendVerificationEmail, sendWelcomeEmail, sendPasswordResetEmail, sendResetSuccessEmail } from "../mailtrap/emails.js";
@@ -8,15 +9,30 @@ import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import fs from "fs";
 import owasp from 'owasp-password-strength-test'
+import { uploadOnCloudinary } from '../utils/cloudinary.js'
+import { profile } from "console";
 // Create __filename and __dirname
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 export const signup = async (req, res) => {
-    const { userId, email, password, userType, fullname, mobile, department, school } = req.body
+    const { userId, email, password, userType, fullName, mobile, branch, school, level } = req.body;
+    const profilePhotoLocalPath = req.file?.path;
+
     try {
-        if (!userId, !password, !userType, !email, !fullname, !mobile, !department, !school) {
-            throw new Error("All Fields Are Required");
+        // Check for missing fields
+        if (!userId || !password || !userType || !email || !fullName || !mobile || !branch || !school) {
+            return res.status(400).json({ success: false, message: "All Fields Are Required" });
+        }
+
+        // Additional validation for students
+        if (userType === 'Student' && !level) {
+            return res.status(400).json({ success: false, message: 'Level is required for students' });
+        }
+
+        // Check for profile photo
+        if (!profilePhotoLocalPath) {
+            return res.status(400).json({ success: false, message: 'Profile Photo is required' });
         }
 
         // Password validation
@@ -36,9 +52,9 @@ export const signup = async (req, res) => {
         owasp.config({
             minLength: 8,
             minOptionalTestsToPass: 4
-        })
+        });
 
-        const result = owasp.test(password)
+        const result = owasp.test(password);
         if (!result.strong) {
             return res.status(400).json({
                 success: false,
@@ -46,46 +62,88 @@ export const signup = async (req, res) => {
             });
         }
 
-        const userAlreadyExists = await User.findOne({ userId })
-        if (userAlreadyExists) {
-            return res.status(400).json({ success: false, message: "User Already Exists" })
+        // Check if user or student already exists
+        const staffAlreadyExists = await Staff.findOne({ userId });
+        if (staffAlreadyExists) {
+            return res.status(400).json({ success: false, message: "Staff Already Exists" });
         }
 
-        const passAlreadyExists = await User.findOne({ password })
-        if (passAlreadyExists) {
-            return res.status(400).json({ success: false, message: "Password Already Exists" })
+        const staffPassAlreadyExists = await Staff.findOne({ password });
+        if (staffPassAlreadyExists) {
+            return res.status(400).json({ success: false, message: "Password Already Exists" });
         }
-        // Generate a salt
-        const salt = await bcrypt.genSalt(10); // 10 is the number of salt rounds, can be adjusted
+
+        const studentAlreadyExists = await Student.findOne({ enrollmentId: userId });
+        if (studentAlreadyExists) {
+            return res.status(400).json({ success: false, message: "Student Already Exists" });
+        }
+
+        const studentPassAlreadyExists = await Student.findOne({ password });
+        if (studentPassAlreadyExists) {
+            return res.status(400).json({ success: false, message: "Password Already Exists" });
+        }
+
+        // Hash the password
+        const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
         const verificationToken = Math.floor(100000 + Math.random() * 900000).toString();
 
-        const user = new User({
-            userId,
-            email,
-            password: hashedPassword,
-            userType,
-            fullname,
-            mobile,
-            verificationToken,
-            verificationTokenExpiresAt: Date.now() + 10 * 60 * 1000, // token / otp expires in 10 minutes
-            department,
-            school
-        })
+        // Upload profile photo
+        const profilePhoto = await uploadOnCloudinary(profilePhotoLocalPath);
+        if (!profilePhoto) {
+            return res.status(400).json({ success: false, message: 'Profile photo not uploaded on cloudinary' });
+        }
 
+        if (userType === 'Student') {
+            const student = new Student({
+                enrollmentId: userId,
+                email,
+                profilePhoto,
+                password: hashedPassword,
+                fullName,
+                mobile,
+                verificationToken,
+                verificationTokenExpiresAt: Date.now() + 10 * 60 * 1000,
+                branch,
+                school,
+                level
+            });
+            await student.save();
 
+            // After successful authentication, generate token and set cookie
+            const token = generateTokenAndSetCookie(res, student._id);
+            console.log("Generated Token:", token);
 
-        await user.save();
-        // jwt
-        generateTokenAndSetCookie(res, user._id)
-        await sendVerificationEmail(user.email, verificationToken)
+            await sendVerificationEmail(email, verificationToken);
 
-        res.status(201).json({ success: true, message: "User created Successfully OTP sent on email for verification", user: { ...user._doc, password: undefined } })
+            return res.status(201).json({ success: true, message: "Student created / registered Successfully. OTP sent on email for verification.", user: { ...student._doc, password: undefined } });
 
+        } else {
+            const staff = new Staff({
+                userId,
+                email,
+                profilePhoto,
+                password: hashedPassword,
+                userType,
+                fullName,
+                mobile,
+                verificationToken,
+                verificationTokenExpiresAt: Date.now() + 10 * 60 * 1000,
+                branch,
+                school
+            });
+
+            await staff.save();
+            await sendVerificationEmail(email, verificationToken);
+
+            return res.status(201).json({ success: true, message: "Staff Member created / registered Successfully. OTP sent on email for verification.", user: { ...staff._doc, password: undefined } });
+
+        }
     } catch (error) {
-        res.status(400).json({ success: false, message: error.message });
+        return res.status(400).json({ success: false, message: error.message });
     }
-}
+};
+
 
 export const login = async (req, res) => {
     const { userId, password } = req.body;
@@ -94,11 +152,17 @@ export const login = async (req, res) => {
             return res.status(400).json({ success: false, message: "UserID and Password are required" });
         }
 
-        const user = await User.findOne({ userId });
+        // Check if the user is a Staff member
+        let user = await Staff.findOne({ userId });
+        // If not found, check if it's a Student
         if (!user) {
-            return res.status(400).json({ success: false, message: "User Does Not Exist" });
+            user = await Student.findOne({ enrollmentId: userId }); // Assuming you use enrollmentId for students
+            if (!user) {
+                return res.status(400).json({ success: false, message: "Student or Staff With this userId Does Not Exist" });
+            }
         }
 
+        // Validate the password
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) {
             return res.status(400).json({ success: false, message: "Invalid UserID or Password" });
@@ -113,13 +177,14 @@ export const login = async (req, res) => {
         // Send the OTP to user's email
         await sendVerificationEmail(user.email, verificationToken);
 
-        res.status(200).json({ success: true, message: "OTP sent to email for verification" });
+        return res.status(200).json({ success: true, message: "OTP sent to email for verification" });
 
     } catch (error) {
         console.error('Error during login controller:', error);
-        res.status(500).json({ success: false, message: error.message });
+        return res.status(500).json({ success: false, message: error.message });
     }
 };
+
 
 export const logout = async (req, res) => {
     res.clearCookie("token"); // Corrected method name (clearCookie)
@@ -128,43 +193,48 @@ export const logout = async (req, res) => {
 };
 
 export const verifyEmail = async (req, res) => {
-    const { code } = req.body;
+    const { code, userId } = req.body; // Include userId in the request body
     try {
-        const user = await User.findOne({
+        // Check if the user is a Staff member
+        let user = await Staff.findOne({
             verificationToken: code,
-            verificationTokenExpiresAt: { $gt: Date.now() } // checking if the verification token/otp is still valid
+            verificationTokenExpiresAt: { $gt: Date.now() }
         });
 
+        // If not found in Staff, check in Student
         if (!user) {
-            return res.status(400).json({
-                success: false, message: "Invalid Or Expired Verification OTP"
+            user = await Student.findOne({
+                verificationToken: code,
+                verificationTokenExpiresAt: { $gt: Date.now() }
             });
         }
 
+        if (!user) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid Or Expired Verification OTP"
+            });
+        }
+
+        // Mark the user as verified
         user.isVerified = true;
         user.verificationToken = undefined;
         user.verificationTokenExpiresAt = undefined;
         await user.save();
 
-        // Logging to check if the user was found and saved
+        // After successful authentication, generate token and set cookie
+        const token = generateTokenAndSetCookie(res, user._id);
+        console.log("Generated Token:", token);
+
         console.log('User verified and saved:', user);
 
-        // Sending the welcome email
         await sendWelcomeEmail(user.email);
-
-        // Logging to check if the email was sent
         console.log('Welcome email sent to:', user.email);
 
-        // Check userType and redirect accordingly
-        if (user.userType === 'Faculty') {
-            return res.status(200).json({ message: 'Login successful',userType: user.userType});
-        } else if (user.userType === 'HOD') {
-            return res.status(200).json({ message: 'Login successful',userType: user.userType});
-        } else if (user.userType === 'Student') {
-            return res.status(200).json({ message: 'Login successful',userType: user.userType});
-        } else {
-            return res.status(400).json({ message: 'Invalid userType' });
-        }
+        return res.status(200).json({
+            message: 'Verification successful',
+            userType: user.userType
+        });
     } catch (error) {
         console.error('Error during email verification:', error);
         res.status(500).json({ success: false, message: error.message });
@@ -172,16 +242,25 @@ export const verifyEmail = async (req, res) => {
 };
 
 export const loginVerify = async (req, res) => {
-    const { code } = req.body; // Only taking the OTP from the request
+    const { code } = req.body; // Taking the OTP from the request
     try {
         console.log(`Received OTP: ${code}`); // Debugging: Check the received OTP
 
         // Find the user by the OTP code and ensure the OTP is still valid
-        const user = await User.findOne({
+        let user = await Staff.findOne({
             verificationToken: code,
             verificationTokenExpiresAt: { $gt: Date.now() } // Check if the OTP is still valid
         });
 
+        // If not found, check the Student model
+        if (!user) {
+            user = await Student.findOne({
+                verificationToken: code,
+                verificationTokenExpiresAt: { $gt: Date.now() }
+            });
+        }
+
+        // Check if user was found
         if (!user) {
             console.log('User not found or OTP expired'); // Debugging: Log if the user is not found or OTP is expired
             return res.status(400).json({ success: false, message: "Invalid or Expired Verification OTP" });
@@ -193,22 +272,17 @@ export const loginVerify = async (req, res) => {
         user.isVerified = true; // Mark the user as verified after OTP verification
         await user.save();
 
-        // After successful authentication
+        // After successful authentication, generate token and set cookie
         const token = generateTokenAndSetCookie(res, user._id);
-
         console.log("Generated Token:", token);
         console.log('User verified and logged in successfully'); // Debugging: Log success
 
-        // Check userType and redirect accordingly
-        if (user.userType === 'Faculty') {
-            return res.status(200).json({ success: true, message: 'Login successful', userType: user.userType});
-        } else if (user.userType === 'Student') {
-            return res.status(200).json({ success: true, message: 'Login successful', userType: user.userType});
-        } else if (user.userType === 'HOD') {
-            return res.status(200).json({ success: true, message: 'Login successful', userType: user.userType});
-        } else {
-            return res.status(400).json({ success: false, message: 'Invalid userType' });
-        }
+        // Check userType and respond accordingly
+        return res.status(200).json({
+            success: true,
+            message: 'Login successful',
+            userType: user.userType // Assuming userType exists in both Staff and Student models
+        });
 
     } catch (error) {
         console.error('Error during login verification:', error); // Debugging: Log any errors

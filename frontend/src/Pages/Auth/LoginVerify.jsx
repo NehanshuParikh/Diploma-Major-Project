@@ -23,15 +23,19 @@ const LoginVerify = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials:'include',
         body: JSON.stringify({ code: otp }), // Assuming 'code' is the correct key for OTP
+        credentials:'include',
       });
 
       const data = await response.json();
       setLoading(false); // stopping the loader
       if (data.success) {
         console.log('Backend Response Data:', data);
-        navigate(`/api/dashboard/`);
+        if (data.userType == undefined) {
+          navigate(`/api/dashboard/student-dashboard`);
+        } else {
+          navigate(`/api/dashboard/${data.userType}-dashboard`);
+        }
       } else {
         setLoading(false) // stopping the loader
         toast.error(data.message);        

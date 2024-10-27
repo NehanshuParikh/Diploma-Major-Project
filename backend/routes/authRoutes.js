@@ -1,10 +1,10 @@
 import express from 'express'
 import { login, loginVerify, logout, signup, verifyEmail, forgotPassword, resetPassword, checkAuth } from '../controllers/authControllers.js'
 import { verifyToken } from '../middleware/verifyToken.js'
-
+import { upload } from '../middleware/multer.js'
 const router = express.Router()
 
-router.post('/signup',signup)
+router.post('/signup',upload.single('profilePhoto'),signup)
 router.post('/login',login)
 router.post('/logout',logout)
 

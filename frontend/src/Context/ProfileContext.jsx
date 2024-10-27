@@ -12,7 +12,11 @@ export const ProfileProvider = ({ children }) => {
   const fetchProfileData = async () => {
     try {
       const response = await fetch(PROFILE_URL, {
+        method: 'GET',
         credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        }
       });
       const result = await response.json();
       if (result.success) {

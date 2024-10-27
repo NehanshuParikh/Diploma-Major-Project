@@ -1,4 +1,5 @@
-import { User } from '../models/userModel.js';
+import { Staff } from '../models/staffModel.js';
+import { Student } from '../models/studentModel.js';
 import jwt from 'jsonwebtoken';
 
 export const verifyToken = async (req, res, next) => {
@@ -29,13 +30,18 @@ export const verifyToken = async (req, res, next) => {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         console.log("Decoded userId: ", decoded.userId);
 
-        // Find the user based on the decoded userId
-        const user = await User.findOne({_id:  decoded.userId});
+        // Try to find the user in the Staff model first
+        let user = await Staff.findOne({ _id: decoded.userId });
 
+        // If not found in Staff, try to find the user in the Student model
         if (!user) {
-            return res.status(401).json({ success: false, message: 'User not found' });
+            user = await Student.findOne({ _id: decoded.userId });
         }
 
+        // If no user is found in either model
+        if (!user) {
+            return res.status(401).json({ success: false, message: 'Student or Staff Member not found' });
+        }
 
         // Attach user to request
         req.user = user;

@@ -1,5 +1,6 @@
 import React from 'react'
 import { useNavigate } from 'react-router'
+import DashboardLayout from '../../../Components/DashboardComponents/DashboardLayout';
 
 const StudentDashboardHome = () => {
 
@@ -25,11 +26,10 @@ const StudentDashboardHome = () => {
   }
   return (
     <>
-    
-    <div>StudentDashboard</div>
-    <button onClick={handleLogout} className="bg-red-500 text-white p-2 rounded">
-      Logout
-    </button>
+      <DashboardLayout>
+        <div>StudentDashboard</div>
+
+      </DashboardLayout>
     </>
   )
 }

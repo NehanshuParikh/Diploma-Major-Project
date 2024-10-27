@@ -1,6 +1,7 @@
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
-import { User } from '../models/userModel.js';
+import { Staff } from '../models/staffModel.js';
+import { Student } from '../models/studentModel.js';
 import { Marks } from '../models/marksModel.js';
 import { readFile } from 'fs/promises';
 import path from 'path';
@@ -34,18 +35,18 @@ export const generateStudentReport = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Search query is required' });
         }
 
-        const user = await User.findOne({
+        const student = await Student.findOne({
             $or: [
                 { userId: searchQuery },
                 { fullname: new RegExp(searchQuery, 'i') }
             ]
         });
 
-        if (!user) {
+        if (!student) {
             return res.status(404).json({ success: false, message: 'Student not found' });
         }
 
-        const marks = await Marks.find({ studentId: user.userId }).sort({ examType: 1, semester: 1 });
+        const marks = await Marks.find({ studentId: student.userId }).sort({ examType: 1, semester: 1 });
 
         // Prepare HTML content with dynamic data
         let templateContent = await readFile(templatePath, 'utf8');
@@ -257,19 +258,19 @@ export const viewStudentReportSheet = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Search query is required' });
         }
 
-        const user = await User.findOne({
+        const student = await Student.findOne({
             $or: [
                 { userId: searchQuery },
                 { fullname: new RegExp(searchQuery, 'i') }
             ]
         });
 
-        if (!user) {
+        if (!student) {
             return res.status(404).json({ success: false, message: 'Student not found' });
         }
 
          // Check if the logged-in user is a student and if so, require a password
-         if (req.user.userType === 'Student') {
+         if (req.student.userType === 'Student') {
             const { password } = req.body;
             if (!password) {
                 return res.status(401).json({ success: false, message: 'Password is required to access the report.' });
@@ -281,7 +282,7 @@ export const viewStudentReportSheet = async (req, res) => {
                 return res.status(401).json({ success: false, message: 'Incorrect password.' });
             }
         }
-        const query = { studentId: user.userId };
+        const query = { studentId: student.userId };
 
         if (examTypeFilter) {
             query.examType = examTypeFilter;
@@ -299,10 +300,10 @@ export const viewStudentReportSheet = async (req, res) => {
 
         const reportData = {
             studentDetails: {
-                name: user.fullname,
-                enrollmentNumber: user.userId,
-                email: user.email,
-                mobile: user.mobile || 'Not provided'
+                name: student.fullname,
+                enrollmentNumber: student.userId,
+                email: student.email,
+                mobile: student.mobile || 'Not provided'
             },
             marksDetails: marks
         };

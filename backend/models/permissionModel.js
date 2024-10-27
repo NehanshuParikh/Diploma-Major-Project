@@ -3,12 +3,12 @@ import mongoose from "mongoose";
 const permissionSchema = new mongoose.Schema({
     hodId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',  // Refers to the HOD who assigns the permission
+        ref: 'Staff',  // Refers to the HOD who assigns the permission
         required: true,
     },
     facultyId: {
         type: String,
-        ref: 'User',  // Refers to the faculty who is assigned the duty
+        ref: 'Staff',  // Refers to the faculty who is assigned the duty
         required: true,
     },
     facultyName: {

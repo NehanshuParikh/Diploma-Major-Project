@@ -24,6 +24,7 @@ import FacultyDashboard from './Pages/Dashboard/FacultyDashboardPages/FacultyDas
 import StudentDashboard from './Pages/Dashboard/StudentDashboardPages/StudentDashboardHome';
 import HODDashboardReport from './Pages/Dashboard/HODDashboardPages/HODDashboardReport';
 import MarksInputPage from './Pages/Dashboard/HODDashboardPages/MarksManagementForms/MarksInputPage';
+import EditProfilePage from './Pages/Dashboard/EditProfilePage';
 function App() {
   const { loading } = useLoading();
   return (
@@ -45,7 +46,10 @@ function App() {
               <Route path="/api/auth/login-verify" element={<LoginVerify />} />
               <Route path="/api/auth/forgot-password" element={<ForgotPassword />} />
               <Route path="/api/auth/reset-password/:token" element={<ResetPassword />} />
-              <Route path="/api/dashboard/" element={<HODDashboardHome />} />
+              <Route path="/api/dashboard/HOD-dashboard" element={<HODDashboardHome />} />
+              <Route path="/api/dashboard/Faculty-dashboard" element={<FacultyDashboard />} />
+              <Route path="/api/dashboard/Student-dashboard" element={<StudentDashboard />} />
+              <Route path="/api/dashboard/edit-profile" element={<EditProfilePage />} />
               <Route path="/api/dashboard/marks-management/addmarks" element={<HODDashboardMarksManagement />} />
               <Route path="/api/dashboard/marks-management/addmarks/inbulk" element={<MarksInBulkForm />} />
               <Route path="/api/dashboard/marks-management/addmarks/manually" element={<MarksInManualForm />} />
