@@ -8,16 +8,20 @@ const BASEURL = 'http://localhost:5173/api';
 
 const Sidebar = ({ isOpen, toggleSidebar, userType }) => {
   const [isMarksDropdownOpen, setMarksDropdownOpen] = useState(false);
+  const [isAttendanceDropDownOpen, setAttendanceDropDownOpen] = useState(false);
   const { profileData, loading } = useContext(ProfileContext); // Use ProfileContext
 
   const toggleMarksDropdown = () => {
     setMarksDropdownOpen(!isMarksDropdownOpen);
   };
+  const toggleAttendanceDropDown = () => {
+    setAttendanceDropDownOpen(!isAttendanceDropDownOpen);
+  };
 
   return (
     <div
-      className={`fixed lg:static top-0 left-0 h-screen w-full z-50 lg:w-80 bg-[#1C2434] dark:bg-[#24303F] transition-transform duration-300 
-      ${isOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}
+      className={`fixed lg:static top-0 left-0 min-h-screen max-h-screen lg:max-h-screen overflow-auto w-full z-50 lg:w-80 bg-[#1C2434] dark:bg-[#24303F] transition-transform duration-300 
+      ${isOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 sidebar`}
     >
       {/* Profile Section */}
       <div className="p-4 flex items-start justify-between flex-row text-center relative border-b-[.5px] border-b-slate-700">
@@ -30,7 +34,7 @@ const Sidebar = ({ isOpen, toggleSidebar, userType }) => {
                 <img
                   src={profileData.profilePhoto || placeholderImage}  // Use profile photo if available
                   alt="Profile"
-                  className="w-24 h-24 rounded-full mb-4"
+                  className="w-24 h-24 mb-4 object-cover rounded-full"
                 />
                 {/* Home Link */}
                 <Link to={'/api/dashboard/edit-profile'} className="block text-gray-200 text-xs hover:underline p-2 rounded absolute bottom-2 right-0">
@@ -96,9 +100,28 @@ const Sidebar = ({ isOpen, toggleSidebar, userType }) => {
               )}
             </div>
 
-            <Link to="/attendance-management" className="block text-white p-2 mb-4 hover:bg-slate-700 rounded">
-              <FaClipboardList className="inline-block mr-2" /> Attendance Management
-            </Link>
+            <div className="mb-4">
+              <div
+                className="block text-white p-2 hover:bg-slate-700 rounded flex items-center justify-between cursor-pointer"
+                onClick={toggleAttendanceDropDown}
+              >
+                <span>
+                  <FaClipboardList className="inline-block mr-2" /> Attendance Management
+                </span>
+                {isAttendanceDropDownOpen ? <FaChevronUp /> : <FaChevronDown />}
+              </div>
+              {isAttendanceDropDownOpen && (
+                <div className="pl-4 mt-2 space-y-2">
+                  <Link to={`${BASEURL}/dashboard/attendance/view-units`} className="block text-white p-2 hover:bg-slate-700 rounded">
+                    View Your Units
+                  </Link>
+                  <Link to={`${BASEURL}/dashboard/attendance/main-page`} className="block text-white p-2 hover:bg-slate-700 rounded">
+                    Take Attendance
+                  </Link>
+
+                </div>
+              )}
+            </div>
             <Link to="/student-resources" className="block text-white p-2 mb-4 hover:bg-slate-700 rounded">
               <FaBook className="inline-block mr-2" /> Student Resources
             </Link>
@@ -129,10 +152,35 @@ const Sidebar = ({ isOpen, toggleSidebar, userType }) => {
               )}
             </div>
 
-            <Link to="/attendance-management" className="block text-white p-2 mb-4 hover:bg-slate-700 rounded">
-              <FaClipboardList className="inline-block mr-2" /> Attendance Management
-            </Link>
+            <div className="mb-4">
+              <div
+                className="block text-white p-2 hover:bg-slate-700 rounded flex items-center justify-between cursor-pointer"
+                onClick={toggleAttendanceDropDown}
+              >
+                <span>
+                  <FaClipboardList className="inline-block mr-2" /> Attendance Management
+                </span>
+                {isAttendanceDropDownOpen ? <FaChevronUp /> : <FaChevronDown />}
+              </div>
+              {isAttendanceDropDownOpen && (
+                <div className="pl-4 mt-2 space-y-2">
+                  <Link to={`${BASEURL}/dashboard/attendance/manage-students`} className="block text-white p-2 hover:bg-slate-700 rounded">
+                    Manage Students
+                  </Link>
+                  <Link to={`${BASEURL}/dashboard/attendance/assign-units`} className="block text-white p-2 hover:bg-slate-700 rounded">
+                    Assign Attendance Units
+                  </Link>
+                  <Link to={`${BASEURL}/dashboard/attendance/view-units`} className="block text-white p-2 hover:bg-slate-700 rounded">
+                    View Your Units
+                  </Link>
+                  <Link to={`${BASEURL}/dashboard/attendance/main-page`} className="block text-white p-2 hover:bg-slate-700 rounded">
+                    Take Attendance
+                  </Link>
 
+                </div>
+              )}
+            </div>
+            
             <Link to="/reports/student-report" className="block text-white p-2 mb-4 hover:bg-slate-700 rounded">
               <FaChartBar className="inline-block mr-2" /> Reports Management
             </Link>

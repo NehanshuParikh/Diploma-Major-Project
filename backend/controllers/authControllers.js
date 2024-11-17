@@ -16,8 +16,16 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 export const signup = async (req, res) => {
-    const { userId, email, password, userType, fullName, mobile, branch, school, level } = req.body;
+    const { userId, email, password, userType, fullName, mobile, branch, school, level, division } = req.body;
     const profilePhotoLocalPath = req.file?.path;
+
+    // Assuming you're receiving `enrollmentDate` in `req.body`
+    const enrollmentDate = new Date(req.body.enrollmentDate);
+
+    if (isNaN(enrollmentDate.getTime())) {
+        return res.status(400).json({ success: false, message: 'Invalid enrollment date' });
+    }
+
 
     try {
         // Check for missing fields
@@ -26,9 +34,10 @@ export const signup = async (req, res) => {
         }
 
         // Additional validation for students
-        if (userType === 'Student' && !level) {
-            return res.status(400).json({ success: false, message: 'Level is required for students' });
+        if (userType === 'Student' && (!level || !enrollmentDate || !division)) {
+            return res.status(400).json({ success: false, message: 'Level and Enrollment Date are required for students.' });
         }
+
 
         // Check for profile photo
         if (!profilePhotoLocalPath) {
@@ -86,6 +95,7 @@ export const signup = async (req, res) => {
         // Hash the password
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
+
         const verificationToken = Math.floor(100000 + Math.random() * 900000).toString();
 
         // Upload profile photo
@@ -94,6 +104,16 @@ export const signup = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Profile photo not uploaded on cloudinary' });
         }
 
+        function calculateCurrentSemester(enrollmentDate) {
+            const now = new Date();
+            const diffInMonths = (now.getFullYear() - enrollmentDate.getFullYear()) * 12 + (now.getMonth() - enrollmentDate.getMonth());
+            const currentSemester = Math.floor(diffInMonths / 6) + 1;
+            console.log(`Calculated Semester: ${currentSemester}, Enrollment Date: ${enrollmentDate}`);
+            return currentSemester;
+        }
+
+
+
         if (userType === 'Student') {
             const student = new Student({
                 enrollmentId: userId,
@@ -101,12 +121,15 @@ export const signup = async (req, res) => {
                 profilePhoto,
                 password: hashedPassword,
                 fullName,
+                division,
                 mobile,
                 verificationToken,
                 verificationTokenExpiresAt: Date.now() + 10 * 60 * 1000,
                 branch,
                 school,
-                level
+                level,
+                semester: calculateCurrentSemester(enrollmentDate),
+                enrollmentDate
             });
             await student.save();
 

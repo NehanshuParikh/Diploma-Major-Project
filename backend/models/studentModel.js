@@ -17,12 +17,24 @@ const studentSchema = mongoose.Schema({
         type: String,
         required: true
     },
+    division: {
+        type: Number,
+        required: true
+    },
     fullName: {
         type: String,
         required: true
     },
     mobile: {
         type: String,
+        required: true
+    },
+    semester: {
+        type: Number,
+        default: 1
+    },
+    enrollmentDate:{
+        type:Date,
         required: true
     },
     lastLogin: {

@@ -16,8 +16,10 @@ function Signup() {
     mobile: '',
     branch: '',
     school: '',
+    division: null,
     profilePhoto: null, // File upload
     level: '', // Only for students
+    enrollmentDate: '' // only for students
   });
 
   const [passwordValidation, setPasswordValidation] = useState({
@@ -43,7 +45,13 @@ function Signup() {
     if (name === 'password') {
       validatePassword(value);
     }
-
+    if (name === 'enrollmentDate') {
+      const parsedDate = new Date(value);
+      setFormData({
+        ...formData,
+        [name]: parsedDate.toISOString(),
+      });
+    }
     setFormData({
       ...formData,
       [name]: value,
@@ -87,6 +95,8 @@ function Signup() {
 
     if (formData.userType === 'Student') {
       formDataToSend.append('level', formData.level); // Append level if userType is Student
+      formDataToSend.append('enrollmentDate', formData.enrollmentDate); // Append level if userType is Student
+      formDataToSend.append('division', formData.division);
     }
 
     try {
@@ -219,6 +229,32 @@ function Signup() {
             onChange={handleChange}
             className="mb-4 p-2 border border-gray-300 rounded w-full"
           />
+        )}
+        {/* Conditionally render the level input field for Students */}
+        {formData.userType === 'Student' && (
+          <input
+            type="number"
+            name="division"
+            placeholder="Division"
+            value={formData.division}
+            onChange={handleChange}
+            className="mb-4 p-2 border border-gray-300 rounded w-full"
+          />
+        )}
+        {/* Conditionally render the Joining Date input field for Students */}
+        {formData.userType === 'Student' && (
+          <>
+            <label htmlFor="enrollmentDate">Enrollement Date</label>
+            <input
+              type="Date"
+              name="enrollmentDate"
+              placeholder="Enrollement Date"
+              value={formData.enrollmentDate}
+              onChange={handleChange}
+              className="mb-4 p-2 border border-gray-300 rounded w-full"
+            />
+
+          </>
         )}
 
         <div className="mb-4 relative">

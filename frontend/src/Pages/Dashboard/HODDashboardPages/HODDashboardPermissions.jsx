@@ -64,8 +64,13 @@ const HODDashboardPermissions = () => {
 
   // Show loading while fetching the data
   if (loading) {
-    return <div>Loading...</div>;
-  }
+    return (
+        <DashboardLayout>
+            <div>Loading...</div>
+        </DashboardLayout>
+
+    )
+}
 
   return (
     <DashboardLayout>

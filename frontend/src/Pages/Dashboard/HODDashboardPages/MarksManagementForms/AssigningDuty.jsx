@@ -69,9 +69,6 @@ const AssigningDuty = () => {
         }
     };
 
-
-
-
     const handleSelectSuggestion = (faculty) => {
         setFormData({ ...formData, facultyNameOrId: faculty.userId });
         setShowSuggestions(false); // Hide suggestions after selection
@@ -264,7 +261,7 @@ const AssigningDuty = () => {
                                             className="p-2 hover:bg-gray-200 cursor-pointer"
                                             onClick={() => handleSelectSuggestion(faculty)}
                                         >
-                                            {faculty.fullname} ({faculty.userId})
+                                            {faculty.fullName} ({faculty.userId})
                                         </li>
                                     ))
                                 ) : (

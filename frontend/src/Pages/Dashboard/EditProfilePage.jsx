@@ -84,7 +84,7 @@ const EditProfileForm = () => {
             <div className="flex justify-center items-center h-screen bg-gray-100 ">
                 <form
                     onSubmit={handleSubmit}
-                    className="w-full max-h-screen max-w-lg bg-white p-8 rounded-lg shadow-lg"
+                    className="w-full lg:mt-0 mt-32 max-w-lg bg-white p-8 rounded-lg shadow-lg"
                 >
                     <h2 className='text-xl font-semi-bold mb-4'>User Profile:</h2>
                     {/* Profile Photo */}
@@ -141,18 +141,18 @@ const EditProfileForm = () => {
                             />
                         </div>
                         {/* Mobile */}
-                    <div className="mb-4">
-                        <label htmlFor="mobile" className="block text-gray-700">Mobile</label>
-                        <input
-                            type="number"
-                            id="mobile"
-                            name="mobile"
-                            value={formData.mobile}
-                            onChange={handleInputChange}
-                            className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            placeholder="Enter your email"
-                        />
-                    </div>
+                        <div className="mb-4">
+                            <label htmlFor="mobile" className="block text-gray-700">Mobile</label>
+                            <input
+                                type="number"
+                                id="mobile"
+                                name="mobile"
+                                value={formData.mobile}
+                                onChange={handleInputChange}
+                                className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder="Enter your email"
+                            />
+                        </div>
                     </div>
                     {/* Email */}
                     <div className="mb-4">

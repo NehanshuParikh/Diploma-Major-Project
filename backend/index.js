@@ -7,9 +7,12 @@ import marksRoutes from './routes/marksRoutes.js'
 import reportRoutes from './routes/reportRoutes.js'
 import dashboardRoutes from './routes/dashboardRoutes.js'
 import profileRoutes from './routes/profileRoutes.js'
+import unitRoutes from './routes/unitRoutes.js'
 import cookieParser from 'cookie-parser';
 import cron from 'node-cron';
 import { Permission } from './models/permissionModel.js';
+import jibbleRoutes from './routes/jibbleRoutes.js'
+
 
 dotenv.config()
 const PORT = process.env.PORT || 5000;
@@ -43,9 +46,12 @@ app.use("/api/auth", authRoutes)
 app.use("/api/dashboard", dashboardRoutes)
 app.use("/api/marksManagement", marksRoutes)
 app.use("/api/reports", reportRoutes);
-
+app.use("/api/units/", unitRoutes)
 // routes for frontend 
 app.use("/api/user", profileRoutes);
+
+// routes for jibble
+app.use("/api/jibble", jibbleRoutes);
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);

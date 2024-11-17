@@ -13,7 +13,6 @@ import { ThemeProvider } from './Context/ThemeContext';
 import { ProfileProvider } from './Context/ProfileContext';
 import HODDashboardHome from './Pages/Dashboard/HODDashboardPages/HODDashboardHome';
 import HODDashboardMarksManagement from './Pages/Dashboard/HODDashboardPages/HODDashboardMarksManagement';
-import HODDashboardAttendenceManagement from './Pages/Dashboard/HODDashboardPages/HODDashboardAttendenceManagement';
 import HODDashboardPermissions from './Pages/Dashboard/HODDashboardPages/HODDashboardPermissions';
 import MarksInBulkForm from './Pages/Dashboard/HODDashboardPages/MarksManagementForms/MarksInBulkForm';
 import MarksInManualForm from './Pages/Dashboard/HODDashboardPages/MarksManagementForms/MarksInManualForm';
@@ -25,6 +24,12 @@ import StudentDashboard from './Pages/Dashboard/StudentDashboardPages/StudentDas
 import HODDashboardReport from './Pages/Dashboard/HODDashboardPages/HODDashboardReport';
 import MarksInputPage from './Pages/Dashboard/HODDashboardPages/MarksManagementForms/MarksInputPage';
 import EditProfilePage from './Pages/Dashboard/EditProfilePage';
+import HODDashboardManageStudents from './Pages/Dashboard/HODDashboardPages/HODDashboardManageStudents';
+import HODashboardAssignUnits from './Pages/Dashboard/HODDashboardPages/HODashboardAssignUnits';
+import UnitViewing from './Pages/Dashboard/UnitViewing';
+import HODDashboardAttendance from './Pages/Dashboard/HODDashboardPages/HODDashboardAttendance';
+import NormalAttendance from './Pages/Attendance/NormalAttendance';
+import ProxyAttendance from './Pages/Attendance/ProxyAttendance';
 function App() {
   const { loading } = useLoading();
   return (
@@ -58,8 +63,13 @@ function App() {
               <Route path="/api/dashboard/marks-management/permissions/assign-duty" element={<AssigningDuty />} />
               <Route path="/api/dashboard/marks-management/permissions/HOD-viewing-panel" element={<HODManagingDuty />} />
               <Route path="/api/dashboard/marks-management/permissions/Faculty-viewing-panel" element={<FacultyManagingDuty />} />
+              <Route path="/api/dashboard/attendance/main-page" element={<HODDashboardAttendance />} />
+              <Route path="/api/dashboard/attendance/take/normal-attendance" element={<NormalAttendance />} />
+              <Route path="/api/dashboard/attendance/take/proxy-attendance" element={<ProxyAttendance />} />
+              <Route path="/api/dashboard/attendance/manage-students" element={<HODDashboardManageStudents />} />
+              <Route path="/api/dashboard/attendance/assign-units" element={<HODashboardAssignUnits />} />
+              <Route path="/api/dashboard/attendance/view-units" element={<UnitViewing />} />
               <Route path="/api/reports/student-report" element={<HODDashboardReport />} />
-              <Route path="/api/dashboard/HOD-dashboard/attendence-management" element={<HODDashboardAttendenceManagement />} />
               <Route path="/api/dashboard/Faculty-dashboard" element={<FacultyDashboard />} />
               <Route path="/api/dashboard/Student-dashboard" element={<StudentDashboard />} />
             </Routes>
