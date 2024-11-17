@@ -1,13 +1,12 @@
 Things Remaining:
 1. Report Genrartion
-2. Uploading marks in bulk is not working ( Fixing it is remaining )
 
-Things Done in the ratest Commit:
-1. Redesigned and Implemented the new Models for whole system: (Staff, Stuents, Attendance, Marks, Permissions)
-2. taking profile photo while signup / registering the user (compulsory for attendance purpose).
-3. All the profile photos are uploaded at Cloudinary.
-4. Profile Details with profile photo is shown on Dashboard.
-5. And Implemented Edit Profile Details for particular or selected fields.
+Things Done in the latest Commit:
+1. Implemented Unit System where HOD can assign the units to the faculty.
 
-Things Not Working:
-1. HOD is not able to signing up. ( Showing Student Already Exists problem in signup controller ).
+What is Unit: Unit is the duty which is assigned to the Fauclty / HOD via the Department HOD.
+
+✅ HOD can assign the units to facculties
+✅ Faculties can veiw their units
+✅ Proxy Lecture or normal Lecture feature included
+✅ Via selecting the unit the faculty will get all of the students of that class as in the form of list or table
